@@ -1,2 +1,2 @@
 # GS.Core
- Core function cpp lib.
+ GS Core for C++
