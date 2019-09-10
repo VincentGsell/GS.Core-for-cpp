@@ -16,7 +16,7 @@ protected:
 	WSADATA WSAData;
 	SOCKET fsock;
 	SOCKADDR_IN fsin;
-	bool ftrace = false;
+	bool ftrace = true;
 
 public:
 	GSTransportTCP()

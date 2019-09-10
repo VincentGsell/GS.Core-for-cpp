@@ -28,6 +28,7 @@ public:
   ~GSMemoryStream();
   void writeByte(uint8_t dataByte);
   void writeUint32(uint32_t dataUint32);
+  void writeUint64(uint64_t dataUint64);
   void writeString(string dataString);
 
   uint8_t readByte();
@@ -35,6 +36,9 @@ public:
   uint32_t readUint32();
   uint64_t readUint64();
   string readString();
+  double readDouble();
+  string readRawString(bool bytesLenPrefixed = false);
+  void writeRawString(string txt, bool bytesLenPrefixed = false);
   GSMemoryStream* readMemoryStream(); //readbuffer, but directy in a GSMemoryStream. Use GSMemoryStream.data() to get your lovely char*.
 
   uint8_t* data();

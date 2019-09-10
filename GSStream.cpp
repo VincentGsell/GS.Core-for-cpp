@@ -65,9 +65,9 @@ void GSMemoryStream::clear(const bool reallocation)
 		if ((uint8_t*)realloc(buffer, CST_BUFSIZE) == NULL)
 			throw "realloc failure";
 		currentSize = CST_BUFSIZE;
-		internalSize = 0;
 	}
 	position = 0;
+	internalSize = 0;
 	gsbzero(buffer, CST_BUFSIZE);
 }
 
@@ -91,10 +91,46 @@ uint8_t GSMemoryStream::readByte()
 string GSMemoryStream::readString()
 {
 	uint32_t statusStringLength = readUint32();
-	string b; 
+	string b = ""; 
 	b.assign((char*)&buffer[position], statusStringLength);
 	position += statusStringLength;
 	return b;
+}
+
+string GSMemoryStream::readRawString(bool bytesLenPrefixed)
+{
+	if (bytesLenPrefixed)
+	{
+		return readString();
+	}
+	else
+	{
+ 		string b = "";
+		uint32_t p = internalSize - position;
+		b.assign((char*)&buffer[position],p);
+		position += p;
+		return b;
+	}
+}
+
+void GSMemoryStream::writeRawString(string txt, bool bytesLenPrefixed)
+{
+	if (bytesLenPrefixed)
+	{
+		writeString(txt);
+	}
+	else
+	{
+		uint32_t ll = txt.size();
+		//writeUint32(ll);
+		if (ll > 0)
+		{
+			controlBuffer(ll);
+			memcpy(&buffer[position], txt.c_str(), ll);
+			position += ll;
+			internalSize += ll;
+		}
+	}
 }
 
 GSMemoryStream* GSMemoryStream::readMemoryStream()
@@ -104,6 +140,15 @@ GSMemoryStream* GSMemoryStream::readMemoryStream()
 	b->loadFromBuffer((char*)&buffer[position], uint32_t(memLength));
 	position += memLength;
 	return b;
+}
+
+double GSMemoryStream::readDouble()
+{
+	uint8_t s = sizeof(double);
+	double ll = -1;
+	memcpy(&ll, &buffer[position], s);
+	position = position + s;
+	return ll;
 }
 
 
@@ -144,6 +189,16 @@ uint64_t GSMemoryStream::readUint64()
 	position = position + sizeof(uint64_t);
 	return ll;
 }
+
+void GSMemoryStream::writeUint64(uint64_t dataUint64)
+{
+	uint64_t ll = sizeof(uint64_t);
+	controlBuffer(ll);
+	memcpy(&buffer[position], &dataUint64, ll);
+	position = position + ll;
+	internalSize = internalSize + ll;
+};
+
 
 
 void GSMemoryStream::writeString(string dataString)
