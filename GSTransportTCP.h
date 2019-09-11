@@ -8,7 +8,7 @@
 #include <winsock2.h>
 
 #include "GSTransport.h"
-
+#include "GSStream.h"
 
 class GSTransportTCP : public GSTransport
 {
@@ -16,17 +16,22 @@ protected:
 	WSADATA WSAData;
 	SOCKET fsock;
 	SOCKADDR_IN fsin;
-	bool ftrace = true;
+	bool ftrace = false;
+	char* internalBuffer;
+	uint32_t BUFFER_MEMORY = 32 * 1024; //32K
 
 public:
+
 	GSTransportTCP()
 	{
 		WSAStartup(MAKEWORD(2, 0), &WSAData);
+		internalBuffer = (char*)malloc(BUFFER_MEMORY); 
 	};
 
 	~GSTransportTCP()
 	{
 		WSACleanup();
+		free(internalBuffer);
 	};
 
 
@@ -48,30 +53,58 @@ public:
 		return (t == 0);
 	};
 
-	bool receive(char* buffer, uint32_t* lenReceived)
+
+	//one shot received, char* interface. 
+	//buffer must be "mallocable".
+	bool receive(GSMemoryStream& data, uint32_t timeOut = 0)
 	{
-		uint32_t r = 0;
-		uint32_t ll = 0;
+		uint32_t r =0, l=0, ll=0, rr = 0;
+		fd_set rfd;
+		FD_ZERO(&rfd);
+		FD_SET(fsock, &rfd);
+		timeval _timeout = { timeOut };
+
+		r = select(fsock + 1, &rfd, NULL, NULL, &_timeout);
+		if (r == -1)
+		{ 
+			if (ftrace)
+			{
+				cout << "receive() Socket Select error" << std::endl;
+			}
+			return false;
+		}
+
+		if (r = 0)
+			return true;
 
 		r = recv(fsock, (char*)&ll, sizeof(ll), 0);
 		ll = ntohl(ll);
+
+		//--- REALLOCATION
+		if (ll > BUFFER_MEMORY)
+			realloc((char*)internalBuffer, ll);
+		//--- REALLOCATION
+
 		do
 		{
-			r = recv(fsock, buffer, ll, 0);
+			r = recv(fsock,(char*)internalBuffer, ll, 0);
+			rr += r;
 			if (ftrace)
 			{
 				if (r > 0)
-					cout << "Bytes received: "<< r << std::endl;
+					cout << "Bytes received: "<< r << " (" <<rr*100/ll << "%)" << std::endl;
 				else if (r == 0)
 					cout << "Connection closed" << std::endl;
 				else
 					cout << "recv failed: " << WSAGetLastError << std::endl;
 			}
-		} while (r > 0 && r < ll);
+		} while (r > 0 && rr < ll);
 	
-		memcpy((void*)lenReceived, &r, sizeof(r));
-		return (r>0);
+		data.clear();
+		data.loadFromBuffer(internalBuffer, ll);
+		return (ll>0);
 	};
+
 
 	bool send(char* buffer, uint32_t len, bool sizedPrefix = true)
 	{

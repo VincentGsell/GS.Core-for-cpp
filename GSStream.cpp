@@ -24,16 +24,18 @@ GSMemoryStream::GSMemoryStream()
 
 GSMemoryStream::~GSMemoryStream()
 {
+  free(buffer);
   if (GSStreamH_TRACE)
-	cout << "GSMemoryStream freed" << endl;
+	cout << "GSMemoryStream freed (" << currentSize << ")" << endl;
 };
 
 void GSMemoryStream::controlBuffer(uint32_t item)
 {
-	if ((internalSize + item) > currentSize)	{
-	  if ((uint8_t*)realloc(buffer, currentSize + currentSize) == NULL)
-		throw "Failled to reallocate memory";
-	  currentSize = currentSize + currentSize;
+	if ((internalSize + item) > currentSize)	
+	{
+		currentSize += currentSize;
+		if ((uint8_t*)realloc(buffer, currentSize) == NULL)
+			throw "Failled to reallocate memory";
 	}
 };
 
