@@ -49,6 +49,8 @@ public:
   void loadFromBuffer(char* sourceData, uint32_t len);
 
   void seekStart();
+  uint32_t seekpos();
+  void setPosition(uint32_t pos);
 };
 
 

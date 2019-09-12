@@ -139,8 +139,11 @@ GSMemoryStream* GSMemoryStream::readMemoryStream()
 {
 	uint64_t memLength = readUint64();
 	GSMemoryStream* b = new(GSMemoryStream);
-	b->loadFromBuffer((char*)&buffer[position], uint32_t(memLength));
-	position += memLength;
+	if (memLength > 0)
+	{
+		b->loadFromBuffer((char*)&buffer[position], uint32_t(memLength));
+		position += memLength;
+	}
 	return b;
 }
 
@@ -157,6 +160,17 @@ double GSMemoryStream::readDouble()
 void GSMemoryStream::seekStart()
 {
 	position = 0;
+}
+
+uint32_t GSMemoryStream::seekpos()
+{
+	return position;
+}
+
+void GSMemoryStream::setPosition(uint32_t pos)
+{
+	if (pos<internalSize)
+		position = pos;
 }
 
 void GSMemoryStream::writeUint32(uint32_t dataUint32)

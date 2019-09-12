@@ -54,8 +54,6 @@ public:
 	};
 
 
-	//one shot received, char* interface. 
-	//buffer must be "mallocable".
 	bool receive(GSMemoryStream& data, uint32_t timeOut = 0)
 	{
 		uint32_t r =0, l=0, ll=0, rr = 0;
