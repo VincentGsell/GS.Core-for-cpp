@@ -39,9 +39,9 @@ public:
   double readDouble();
   string readRawString(bool bytesLenPrefixed = false);
   void writeRawString(string txt, bool bytesLenPrefixed = false);
-  GSMemoryStream* readMemoryStream(); //readbuffer, but directy in a GSMemoryStream. Use GSMemoryStream.data() to get your lovely char*.
+  GSMemoryStream* readMemoryStream(bool prefixed = true, uint64_t lenIfNotPrefixed = 0); //readbuffer, but directy in a GSMemoryStream. Use GSMemoryStream.data() to get your lovely char*.
 
-  uint8_t* data();
+  uint8_t* data(); //Whole data.
   uint32_t size();
   void clear(const bool reallocation = false);
 
@@ -49,7 +49,7 @@ public:
   void loadFromBuffer(char* sourceData, uint32_t len);
 
   void seekStart();
-  uint32_t seekpos();
+  uint32_t seekPos();
   void setPosition(uint32_t pos);
 };
 

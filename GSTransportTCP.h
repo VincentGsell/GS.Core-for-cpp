@@ -54,13 +54,16 @@ public:
 	};
 
 
-	bool receive(GSMemoryStream& data, uint32_t timeOut = 0)
+	bool receive(GSMemoryStream& data, uint32_t timeOut = 5000)
 	{
 		uint32_t r =0, l=0, ll=0, rr = 0;
 		fd_set rfd;
 		FD_ZERO(&rfd);
 		FD_SET(fsock, &rfd);
-		timeval _timeout = { timeOut };
+		timeval _timeout;
+
+		_timeout.tv_sec = 0;		
+		_timeout.tv_usec = (timeOut+1)*1000;
 
 		r = select(fsock + 1, &rfd, NULL, NULL, &_timeout);
 		if (r == -1)
@@ -72,7 +75,7 @@ public:
 			return false;
 		}
 
-		if (r = 0)
+		if (r == 0)
 			return true;
 
 		r = recv(fsock, (char*)&ll, sizeof(ll), 0);

@@ -42,9 +42,7 @@ void GSMemoryStream::controlBuffer(uint32_t item)
 void GSMemoryStream::loadFromStream(GSMemoryStream* Source, bool clear)
 {
 	if (clear)
-	{
 		GSMemoryStream::clear();
-	};
 	Source->seekStart();
 	controlBuffer(Source->size());
 	memcpy(&buffer[position], Source->data(), Source->size());
@@ -70,7 +68,7 @@ void GSMemoryStream::clear(const bool reallocation)
 	}
 	position = 0;
 	internalSize = 0;
-	gsbzero(buffer, CST_BUFSIZE);
+	gsbzero(buffer, currentSize);
 }
 
 void GSMemoryStream::writeByte(uint8_t dataByte)
@@ -135,9 +133,11 @@ void GSMemoryStream::writeRawString(string txt, bool bytesLenPrefixed)
 	}
 }
 
-GSMemoryStream* GSMemoryStream::readMemoryStream()
+GSMemoryStream* GSMemoryStream::readMemoryStream(bool prefixed, uint64_t lenIfNotPrefixed)
 {
-	uint64_t memLength = readUint64();
+	uint64_t memLength = lenIfNotPrefixed;
+	if (prefixed)
+		memLength = readUint64();
 	GSMemoryStream* b = new(GSMemoryStream);
 	if (memLength > 0)
 	{
@@ -162,7 +162,7 @@ void GSMemoryStream::seekStart()
 	position = 0;
 }
 
-uint32_t GSMemoryStream::seekpos()
+uint32_t GSMemoryStream::seekPos()
 {
 	return position;
 }
@@ -234,6 +234,7 @@ uint8_t* GSMemoryStream::data()
 {
   return buffer;
 };
+
 
 uint32_t GSMemoryStream::size()
 {
