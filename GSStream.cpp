@@ -8,7 +8,7 @@ using namespace std;
 #include "GSStream.h"
 
 
-uint32_t CST_BUFSIZE = 32*1024;
+size_t CST_BUFSIZE = 32*1024;
 bool GSStreamH_TRACE = false;
 
 GSMemoryStream::GSMemoryStream()
@@ -29,7 +29,7 @@ GSMemoryStream::~GSMemoryStream()
 	cout << "GSMemoryStream freed (" << currentSize << ")" << endl;
 };
 
-void GSMemoryStream::controlBuffer(uint32_t item)
+void GSMemoryStream::controlBuffer(uint64_t item)
 {
 	if ((internalSize + item) > currentSize)	
 	{
@@ -50,12 +50,12 @@ void GSMemoryStream::loadFromStream(GSMemoryStream* Source, bool clear)
 	internalSize = internalSize + Source->size();
 }
 
-void GSMemoryStream::loadFromBuffer(char* sourceData, uint32_t len)
+void GSMemoryStream::loadFromBuffer(char* sourceData, uint64_t len)
 {
 	controlBuffer(len);
-	memcpy(&buffer[position], sourceData, len);
+	memcpy(&buffer[position], sourceData, size_t(len));
 	position = position + len;
-	internalSize = internalSize + len;
+	internalSize = internalSize + size_t(len);
 }
 
 void GSMemoryStream::clear(const bool reallocation)
@@ -106,8 +106,8 @@ string GSMemoryStream::readRawString(bool bytesLenPrefixed)
 	else
 	{
  		string b = "";
-		uint32_t p = internalSize - position;
-		b.assign((char*)&buffer[position],p);
+		uint64_t p = internalSize - position;
+		b.assign((char*)&buffer[position],size_t(p));
 		position += p;
 		return b;
 	}
@@ -141,8 +141,8 @@ GSMemoryStream* GSMemoryStream::readMemoryStream(bool prefixed, uint64_t lenIfNo
 	GSMemoryStream* b = new(GSMemoryStream);
 	if (memLength > 0)
 	{
-		b->loadFromBuffer((char*)&buffer[position], uint32_t(memLength));
-		position += memLength;
+		b->loadFromBuffer((char*)&buffer[position], memLength);
+		position += (size_t)memLength;
 	}
 	return b;
 }
@@ -162,12 +162,12 @@ void GSMemoryStream::seekStart()
 	position = 0;
 }
 
-uint32_t GSMemoryStream::seekPos()
+uint64_t GSMemoryStream::seekPos()
 {
 	return position;
 }
 
-void GSMemoryStream::setPosition(uint32_t pos)
+void GSMemoryStream::setPosition(uint64_t pos)
 {
 	if (pos<internalSize)
 		position = pos;
@@ -208,7 +208,7 @@ uint64_t GSMemoryStream::readUint64()
 
 void GSMemoryStream::writeUint64(uint64_t dataUint64)
 {
-	uint64_t ll = sizeof(uint64_t);
+	size_t ll = sizeof(uint64_t);
 	controlBuffer(ll);
 	memcpy(&buffer[position], &dataUint64, ll);
 	position = position + ll;

@@ -17,11 +17,11 @@ class GSMemoryStream
 {
 protected:
 	uint8_t* buffer;
-	uint32_t position = 0;
-	uint32_t internalSize = 0;
-	uint32_t currentSize = 0;
+	uint64_t position = 0;
+	size_t internalSize = 0;
+	size_t currentSize = 0;
 
-	void controlBuffer(uint32_t item);
+	void controlBuffer(uint64_t item);
 
 public:
   GSMemoryStream();
@@ -46,11 +46,11 @@ public:
   void clear(const bool reallocation = false);
 
   void loadFromStream(GSMemoryStream* Source, bool clear = true); 
-  void loadFromBuffer(char* sourceData, uint32_t len);
+  void loadFromBuffer(char* sourceData, uint64_t len);
 
   void seekStart();
-  uint32_t seekPos();
-  void setPosition(uint32_t pos);
+  uint64_t seekPos();
+  void setPosition(uint64_t pos);
 };
 
 
